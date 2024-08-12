@@ -1,0 +1,999 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{graphicx,textcomp}
+\usepackage{hyperref} % Add hyperref package
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{fullpage}
+\usepackage{color}
+\usepackage[reqno]{amsmath}
+\usepackage{amsthm}
+\usepackage{fancyvrb}
+\usepackage{amssymb,enumerate}
+\usepackage[all]{xy}
+\usepackage{endnotes}
+\usepackage{lscape}
+\newtheorem{com}{Comment}
+\usepackage{float}
+\usepackage{hyperref}
+\newtheorem{lem} {Lemma}
+\newtheorem{prop}{Proposition}
+\newtheorem{thm}{Theorem}
+\newtheorem{defn}{Definition}
+\newtheorem{cor}{Corollary}
+\newtheorem{obs}{Observation}
+\usepackage[compact]{titlesec}
+\usepackage{dcolumn}
+\usepackage{tikz}
+\usepackage{lipsum} 
+\usetikzlibrary{arrows}
+\usepackage{multirow}
+\usepackage{xcolor}
+\newcolumntype{.}{D{.}{.}{-1}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+\definecolor{light-gray}{gray}{0.65}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{indentfirst}
+\usepackage{booktabs}
+\usepackage{floatflt}
+\usepackage{float}
+\usepackage{comment}
+\usepackage{adjustbox}
+\usepackage{fancyhdr}
+\usepackage{caption}  % To customize captions
+%\usepackage{biblatex}
+\usepackage{wrapfig}
+\usepackage[
+backend=biber,
+style=apa,
+]{biblatex}
+
+
+
+\addbibresource{Dissertation2.bib}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+
+
+% Define a custom page style for the title page
+\fancypagestyle{titlepageheader}{%
+	\fancyhf{} % clear all header and footer fields
+	\fancyhead[L]{%
+		\vspace*{-0.5cm} % Move the image higher up
+		\hspace*{-2cm} % Move the image further to the left
+		\includegraphics[height=5cm]{Trinity_Main_Logo}
+	} 
+	\renewcommand{\headrulewidth}{0pt} % Remove the horizontal line in the header
+}
+
+\begin{document}
+	
+	\begin{titlepage}
+		\thispagestyle{titlepageheader} % Apply the custom page style
+		
+		% Center the title, author, and other details
+		\vspace*{5cm} % Adjust this value to move the content down
+		\begin{center}
+			\Large{\textbf{Variance in Environmental Mentions Across Constituencies in England}} \\ % Title
+			\vspace{1.5cm}
+			\Large{Kaley Burg} \\ % Author
+			\vspace{0.5cm}
+			\large{Supervised by: Dr. Martyn Egan} \\ % Supervisor
+			\vspace{1.5cm}
+			\large{\today} % Date
+		\end{center}
+	\end{titlepage}
+			
+			\tableofcontents
+			
+			\newpage
+			
+\section*{Acknowledgments}
+
+\noindent			
+I would like to express my gratitude to all of the lecturers in this program as well as my supervisor Dr. Martyn Egan. This course exceeded my expectations in what I learned and showed me what is possible with data.
+			\vspace{0.5cm}
+
+\noindent		
+I would also like to thank the Research IT team at Trinity College Dublin for allowing me HPC Cluster access on Callan, this project would not have been possible without these resources.
+
+			\vspace{0.5cm}
+\noindent
+Lastly, I express my gratitude to my friends at Trinity and the family members who supported me. Namely my older sister, whom I should have listened to 5 years ago when she told me I would enjoy coding, she was as usual, correct.
+			
+			\newpage
+	
+	\section{Abstract}
+	
+	This study measures the variation of leaflet campaign messages by constituency in the UK within each major political party (Conservative, Labour, Liberal Democrats, Green, and UK Independence) during the 2010, 2015, 2017, and 2019 General UK Elections. This is done using leaflet data from OpenElections \autocite{milazzo2020openelections}. The text from each leaflet is scraped and analysed with the Laver \& Garry Quanteda dictionary \autocite{laverEstimatingPolicyPositions2000} on policy positions with frequencies of environmental or climate mentions counted for each constituency by year and political party. These is compared to the other constituencies belonging to the same party. Variance among constituencies in environmental mentions is compared to weather data in England as well as previous election voteshare and 2011 census data regarding income, age, and education level of citizens within the constituencies. The aim of this study is to determine the frequencies of topic mentions and identify factors which are most strongly related to these changes in frequency in local politician campaigns in UK general elections.
+	
+	\newpage
+	
+	\section{Introduction}
+	
+Issue salience within party manifestos in England can be used to shed light on both the current political climate as well as the major goals and priorities of a political party. For instance, past research has shown that different parties consistently highlight different issues, such as the Labour Party with employment, the Conservative Party with law and order and rural life, and the Liberal Democrats with the environment \autocite{pogorelisIssueSalienceRegional2005}. Beyond variance in messaging and campaigning between the political parties, variance exists within parties themselves. Within political parties in the United Kingdom, the amount of campaigning done and resources utilised is determined by constituency resources (rather than whole party resources) and incumbency status within the constituency that the campaign takes place \autocite{pattieIncumbentPartiesIncumbent2017a}. This demonstrates the need to understand party campaigns on the constituency level in order to capture and understand the current political sphere.
+
+
+This also relates to political geography, such that political behaviour is geographical and has implications on the voting habits as well as campaign messages. This has been studied within different regions in Scotland, finding that there is variation of campaign strategies within political parties depending on the location of the campaign \autocite{pringleClassicsHumanGeography2003,agasosterPartyCohesionLocal2001}. Campaign strategies can pertain to both messages within campaigns as well as the number or frequency of campaigns in specific areas. Regarding campaign messaging, election leaflets are often looked at as they continue to serve as the most common way of campaigning. Variation has been found within these leaflets, specifically in the 2019 UK General Election, as mentions of specific issues or parties is not consistent throughout all constituencies in England  \autocite{trummParliamentaryCandidatesTheir2023a}. Not only is there variance in mentioned issues and topics within leaflets, but also the distribution of these leaflets may not be uniform, as campaigning in constituencies may also vary due to campaign funding itself, with target seats emphasized and focused on more in campaign strategies \autocite{pattieResourcingConstituencyCampaign2016}. This is in part influenced by the distribution of the electorate, as major political parties aim to reduce abstention and third parties aim to sway voters away from the main two parties \autocite{nunezEffectsLocalCampaigning2021}.
+
+Issue salience generally has typically been focused on different parties as a whole. For example, Green parties have the highest environmental issue salience, social democratic parties tend to have higher environmental salience than conservative parties, and parties on the left have higher environmental salience overall because they are in more competition for votes with the Green Party \autocite{carterGreeningMainstreamParty2013}. The tendency of parties to mention the environment is also influenced by public opinion \autocite{carterPartyPoliticizationEnvironment2006}. There has been limited research, however, on issue salience within parties by constituency. Local campaigns do vary based on constituency in the issues that are mentioned, specifically with Conservatives and Liberal Democrats mentioning issues that are not stated in their overall manifestos \autocite{harrisonNationalLocalParty2008}. This study by Harrison and McSweeney highlights the basis of this dissertation: there is variation in the issues mentioned within UK campaign leaflets. The first goal of my research is to add to this body of work by determining not only how the content varies between constituencies but how these content mentions vary in \textit{frequency} throughout UK constituencies.
+
+
+As the goal of campaigning is success in both the local campaign and on a national scale, party campaign success should be examined as well. While greater campaign efforts within a party typically result in better vote share, results are also impacted by the the strength of competitor parties as well as the incumbent party at the time of the election \autocite{pattieIncumbentPartiesIncumbent2017a}. For this reason, it is important to understand which party constituencies typically vote for (and which issues they represent) in order to also understand how future politicians choose to campaign. Issue salience can be a useful indicator of campaign strategy as opposed to stance on the issue alone, as parties will mention issues more often if they expect to attract voters this way \autocite{pogorelisIssueSalienceRegional2005}. While past literature on topic variance in campaigning has shown the mere presence of variance, it does not explain why this variance is present. Analysing correlating factors with issue salience variance may shed light on the rationale behind the strategies used by political parties in campaigns. The second goal of this dissertation is therefore to understand which factors are related to varying frequencies of topic mentions. 
+
+
+
+\section{Literature Review}
+
+\subsection{Public Opinion and Political Communication}
+
+To understand the reason behind variation within political parties, it is important to first understand how these campaigns are broadly created. Parties are attentive to changes in voter opinions, such that they dedicate resources to telephone, door-to-door, and email canvassing of members of the electorate in order to develop their campaigns \autocite{fisherFootsloggingCallCentres2008}. Furthermore, parties have the capacity to respond to new information about public opinion in order to improve their campaigns \autocite{hartmanLearningJobAdapting2017}. The type of public opinion matters though, as European parties tend to change their campaigns in response to public opinion that clearly denotes a shift in public opinion away from the party, rather than changing their campaigns due to more general public opinion shifts \autocite{adamsUnderstandingChangeStability2004}. 
+
+Mention of specific topics, such as the environment and climate change, in campaigns and manifestos is also determined in large part by where issues fall on the classic left/right divide \autocite{farstadWhatExplainsVariation2018}. Public opinion and party alliance are interconnected as well though, as research, especially in the USA, has demonstrated that both political elites and general citizens associated with Republican/right-leaning parties tend to be more dismissive of the existence of climate change  \autocite{dunlapPoliticalDivideClimate2016,mccrightPoliticizationClimateChange2011}. This demonstrates that a party may continue to highlight issues associated with their political side until there is both a shift in public opinion on the topic as well as an opposing side party that is highlighting the topic \autocite{carterPartyPoliticizationEnvironment2006}. In constituencies where support for a specific party is and historically has been high, then they therefore may not be pushed to incorporate issues into their campaign that are historically not associated with their party. 
+
+Issues may be pushed within a party when a rival party threatens an incumbent one. Regardless of whether it has an impact on the effectiveness of a campaign, an incumbent party may campaign harder when threatened by a challenger party in the constituency \autocite{pattieIncumbentPartiesIncumbent2017a}. This introduces vote share of previous elections (as well as public opinion) as a feature of importance in determining which factors may prove to be the most useful in understanding variance in the frequency of environmental mentions in election leaflets.
+
+
+\subsection{Factors Influencing Public Opinion}
+
+\subsubsection{Weather Events and Climate Attitudes}
+
+As public opinion may be important in understanding where and why variation may occur in campaign strategies throughout constituencies, it is therefore important to also identify factors involved in the formation of these opinions. Specifically, as this study will focus on environmental mentions, formation of attitudes regarding climate change and environmental issues of the general public may provide useful insight. Although past research has found little to no association between experiencing climate extremes and changes in climate change opinions, \textcite{koniskyExtremeWeatherEvents2016} found that, with more specific geospatial resolution, extreme weather events in the last month (or several months for more extreme events) does increase concern about climate change. This study also found that ideology and partisanship have an impact on these attitudes \autocite{koniskyExtremeWeatherEvents2016}. The effect of natural disasters on climate attitudes also seems to vary based on prior climate opinions when a climate event occurs as well as the proximity to the event. Individuals in Germany who were within 1 km of a flood  were more likely to believe more strongly in climate change, as were individuals physically unaffected by flooding but who instead believed in climate change prior to the flood occuring within the community. \autocite{osberghausNaturalDisastersClimate2022}. This means that when analysing possible changes in climate attitudes, it is necessary to control for both possible proximity to climate events (such as flooding) as well as prior beliefs of members in the constituency, such as through looking at past Green Party vote share.
+
+Aside from floods, other forms of climate events may affect public climate opinions as well. \textcite{viscontiEffectDifferentExtreme2024} found that in the US, floods and storms did not seem to have an effect on climate attitudes. This was also supported by \textcite{loComeRainShine2015}, who found that individuals may not attribute increased rainfall or flooding to climate change, meaning that different weather events may have different effects on climate beliefs. Intricacy in observing weather patterns on their own is complex as well, such that physical and psychological proximity to a natural disaster may differ, meaning that those nearby an events but are not directly affected may have different belief outcomes than those that are nearby \textit{and} directly affected \autocite{siscoEffectsWeatherExperiences2021}. Furthermore, individuals may not perceive changes in temperature accurately, thereby making it difficult to assess climate attitudes based on temperature changes alone \autocite{goebbertWeatherClimateWorldviews2012}. However, the same study by \textcite{goebbertWeatherClimateWorldviews2012} found that rainfall and soil moisture are closely related to actual data on flooding and drought, but the perceptions surrounding these events are influenced by ideological and cultural factors pertaining to individuals experiencing them, which is in line with research from \textcite{osberghausNaturalDisastersClimate2022} as well.
+
+Although some studies have shown that proximity to natural disasters is crucial to changing climate beliefs, \textcite{albrightBeliefsClimateChange2019} found that direct experience with flood damage is less important as time goes on and that what is more impactful is the perception of community damage and safety from natural disasters. In the case of election campaigns, this may have an impact on campaigning as politicians may be gauging the public perception of climate change over a longer period than just the time period directly after a flood or natural disaster. Regarding the mechanisms behind these changes in opinion, attribution of flooding and other events to climate change itself is an important element to consider. Similar to how \textcite{loComeRainShine2015} found that different weather events may be associated with different perceptions of climate change, the same event, such as a flood, may or may not be attributed to climate change based on whether an individual is directly affected by the event, with the effect moderated by political party affiliation \autocite{ogunbodeIndividualLocalFlooding2020}. Political party affiliation or preference may be inversely affected by climate events as well, specifically when implicit or automatic associations towards politicians and policies is measured instead of explicitly stated attitudes \autocite{rudmanWhenTruthPersonally2013a}. 
+
+In addition to just changing beliefs in climate change overall, individuals may support different electricity or energy policies that may not be inherently tied to their climate beliefs. For instance, \textcite{osberghausCausalEffectFlood2019} found that damage to an individual may not be inherently tied to support for green electricity as different households and communities may vary by income and eligibility for disaster relief, thereby producing differences in support for these policies. Furthermore, exposure to extreme temperatures in the UK was shown to have a statistically significant effect on concern towards energy security \autocite{larcomUKSummerHeatwave2019a}. As politicians are inherently concerned with support for policies and parties, it may therefore be important to analyse factors that may be related to changes in environmental policy support even if they are not directly related to changes in climate change belief. 
+
+
+
+\subsubsection{Other Correlates of Voting Behaviours}
+
+\paragraph{Rural vs. Urban Constituencies}
+
+Throughout Europe, political views tend to vary depending on location, such that those living outside of cities tend to be more conservative but more active about voting, whereas those within cities may vote less often but engage in other forms of political demonstration \autocite{kennyUrbanruralPolarisationPolitical2021}. Urban and rural areas also differ significantly in terms of the demographics of those who live in each area. \textcite{patemanRuralUrbanAreas2011} discusses differences between both rural and urban areas as well as sparse/isolated vs non-sparse areas: for instance that rural non-sparse areas have the lowest levels of poverty, that young adults tend to move to urban areas from rural areas, and rural areas tend to have a lower crime rate than urban ones. These factors may also play a role in the type of issues that candidates may focus on in their campaigns. These areas may have different political precedents due to differences historically, especially regarding the internet as there was previously a divide in access to internet between rural and urban areas, as found by \textcite{choudrieRealisingGovernmentUK2005}. However \textcite{patemanRuralUrbanAreas2011} found current equal access to the internet, with rural areas sometimes having greater access than urban areas.
+
+In terms of environmental issues specifically, \textcite{bognerEnvironmentalPerceptionRural1997} found little to no difference between rural and urban students regarding environmental attitudes and behaviours. This finding has been confirmed in more recent work as well, with the perspective instead being that measurement tools surrounding attitudes and behaviours should be more inclusive for both urban and rural behaviours to allow for more accurate comparison \autocite{huddart-kennedyRuralUrbanDifferencesEnvironmental2009}. Although concern towards the environment as it has typically been measured appears to be higher in urban areas, differences seemingly arise more from different types of environmental concern between rural and urban individuals \autocite{deberenguerRuralUrbanDifferencesEnvironmental2005}. Although the difference does not seem to lie in overall differences between rural and urban-dwellers, the form in which their environmental concern may take may have impacts for policy-makers. \textcite{freudenburgRuralUrbanDifferencesEnvironmental1991} suggests that policy-making may be nuanced in rural areas, as farmers and other groups may be less inclined to engage in environmental behaviour regardless of expressing pro-environment attitudes and policy-makers may similarly appear pro-environmental without suggesting any specific environmental policies. This provides more reasoning to view environmental mentions in campaigns on a quantitative scale rather than a binary scale, in order to hopefully obtain an indicator of how seriously environmental issues are seen.
+
+\paragraph{Remaining Demographic Factors}
+
+In isolating other factors that might be related to environmental concern, many authors have found it difficult to find straightforward relationships between demographic factors (such as socioeconomic status, political views, etc.) and environmental concern \autocite{dietzSocialStructuralSocial1998,samdahlSocialDeterminantsEnvironmental1989,giffordPersonalSocialFactors2014}. The issue in finding a relationship may however be more related to the wording of questionnaire items used to measure environmental concern. \textcite{klinebergDemographicPredictorsEnvironmental1998} found that younger and more educated individuals tend to express greater environmental concern regardless of measurement differences, while the effects of other demographic factors on concern level depend heavily on how questions are worded. Whether age is a good predictor of environmental concern is also relatively contested in the literature, with some findings showing age to be a more significant factor than education \autocite{buttelAgeEnvironmentalConcern1979}, with later research suggesting that environmental education is increasing across the population, making education the driving factor of environmental concern \autocite{howellChangingFaceEnvironmental1992}. Education and age together being a predictor of environmental concern has also been found in some research \autocite{arcuryEnvironmentalWorldviewResponse1990}, in addition to other factors such as income \autocite{gambaFactorsInfluencingCommunity1994} and political ideology \autocite{dunlapImpactPoliticalOrientation1975}. As the scope of this study extends to the constituency level and is less concerned with individual opinions towards the environment, it would seem that regardless of \textit{how} these various demographic predictors (age, income, education, and political orientation) are related to environmental and climate attitudes, that politicians may still be taking these factors into account in their campaign strategies.
+
+	
+	\newpage
+	
+
+	
+	\section{Data and Methods}
+
+The outcome data will be measured using leaflet data from OpenElections \autocite{milazzo2020openelections}. This contains information from the 2010, 2015, 2017, and 2019 UK General Elections, with leaflets uploaded and coded based on constituency, party, issues mentioned, etc. The OpenElections data contains images of the leaflets as well as the metadata obtained by human coders. In order to enhance this dataset and separate it from other previously existing datasets, this project will also use text-scraping from image techniques. \autocite{KerasocrKeras_ocrDocumentation,hoffstaetterPytesseractPythontesseractPython}. This process involves machine learning algorithms that detect text from an image and uses Optical Character Recognition (OCR) \autocite{madhugiriExtractTextImages2022}. This will be supplemented with Pytesseract's text orientation function that detects both the language of the text as well as if the text is rotated \autocite{rosebrockCorrectingTextOrientation2022} in order to be able to flip the images that are rotated either 90 or 270 degrees. As there were over 18,000 images scraped from the OpenElections website, this step will be crucial in order to ensure that the highest possible amount of text is preserved. Due to the high computational needs of this project, Trinity College Dublin's Callan cluster will be used to process the images using batch jobs.
+
+
+
+The text will then be sorted using the Laver Garry dictionary \autocite{laverEstimatingPolicyPositions2000} with frequencies of each category of words counted for each constituency, party, and year. The words pertaining to the environment from this dictionary are divided into pro-environment words (ie., "car", "chemical", "ecolog", "emission", "green", "planet", and "product") as well as con-environment words (ie., "product"). In addition to these words, I will add a 'climate' subcategory consisting of the following words: "climate", "climate change", "global warming", "carbon emissions", and "greenhouse gases." These words were selected by reading through several leaflets and finding common words pertaining to the environment in order to best match the definition of environmentally related words to the human coders. Once the dictionary is used and the leaflets' text is divided into cleaned tokens, the environment (among the others) subcategories will be condensed together and the number of words matching in any of the subcategories will be counted and stored as a count variable in the dataset. This dataset therefore will not take into account the type of environmental mentions included in the leaflets, although this could be an avenue for further research. 
+
+Furthermore, as this project will use text scraped from leaflets rather than articles or speeches, the pre-processing of the text will follow a slightly different approach than standard text analysis projects. Rather than removing stop words and finding collocations, the data cleaning process will minimally process text data, primarily removing symbols and numbers. As the text is not necessarily in the correct order, this will be necessary to make sure that the analysis does not miss any important mentions. The text data obtained from this process will then be compared back to the metadata that was created by human coders but will also be used to examine issue salience and frequency of mentions beyond what can be done with human coders \autocite{trummParliamentaryCandidatesTheir2023a}. The metadata for the leaflets only contains a binary measure of mentions: either the leaflet mentions the issue or it does not. Although this will be useful for ensuring accuracy of the keras-OCR model, it does little in capturing a full image of fine details in campaigns. 
+ 
+
+
+After the text has been scraped, variation within each topic will be measured between constituencies as well as between each party and election year. Once the environmental mentions have been quantified, the Historic Flood Warning dataset will be included as well \autocite{agencyHistoricFloodWarnings2024}, which contains the following warnings: Severe Flood Warning: Severe flooding, Danger to life; Flood Warning: Flooding is expected, Immediate action required; Flood Alert: Flooding is possible, Be prepared. In order to match this flood data to the constituency level, the areas listed will be matched to the administrative boundaries set by the Environment Agency and Natural England \autocite{NaturalEnglandOpen}. These areas will then be overlaid onto the constituency map in order to determine which constituencies are in each administrative area, and as such, which constituencies have been affected or are nearby a flooding event. The floods have also been sorted into different levels as a measure of severity of each flooding event, as described above. As flooding may occur between constituencies or individuals may be affected by floods that are not necessarily in their own constituency, the use of flood data at the administrative area scale rather than the constituency area scale may prove to be a benefit rather than a limitation within the study. The overlay of the boundaries onto the parliamentary constituencies is shown in Figure~\ref{fig:flood_overlay}.
+
+% Include the image with text wrapping
+\begin{wrapfigure}[27]{l}{0.5\textwidth}
+	\centering
+	\includegraphics[width=0.40\textwidth]{overlay3.png}
+	\caption{Overlay of Admin Boundaries on Constituencies}
+	\label{fig:flood_overlay}
+\end{wrapfigure}
+
+
+In addition to flood data, data from Meteostat \autocite{MeteostatPyPI} will be used to collect rainfall, snowfall, and temperature data by constituency. The centroids of the constituencies will be determined with the Sheffield Solar Geocode Python package \autocite{GitHubSheffieldSolarGeocode} and these locations will then be used to calculate the meteostat data from one year before the election date to the election date. This time period was chosen based on past literature suggesting that extreme weather events are most salient closer to the event \autocite{viscontiEffectDifferentExtreme2024}. In order to have access to the highest amount of data possible, the area around the centroid location will be expanded to a radius of 200,000 meters, as data is limited for the dataset at smaller area points. As the literature also suggests that physical and psychological difference may not be directly linked (and that psychological distance may be more important in determining climate attitudes) \autocite{maiellaPsychologicalDistanceClimate2020} this study will work under the assumption that geospatial data does not need to reflect exact coordinates but instead nearby coordinates for any members of the constituency. The data will then be collected by month and then converted into yearly averages for each of the weather types in each constituency. This is to obtain a general summary of how weather patterns vary across the UK in the year leading up to each election.
+
+The weather data contained in the Meteostat package includes the following variables: station, time, average air temperature in C, minimum air temperature in C, maximum air temperature in C, monthly precipitation total in mm, average windspeed in km/h, and average sea-level air pressure in hPa.
+
+\paragraph{Controls}
+
+In addition to weather and flood data, various demographic factors will be used as controls. Control data will be taken from the 2011 UK Census \autocite{2011CensusOffice}, as this is the nearest census data to all of the elections in the dataset (2010, 2015, 2017, and 2019) as the 2021 census was not released yet. These controls will include median age, proportions of individuals with various educational attainment, and average income. In order to use educational attainment, the total number of students, regardless of employment status, will be summed to collect a total number of students within a constituency. As income data is not readily available numerically in the 2011 census, occupational rank will be used in its place. These overarching categories are: Higher managerial, administrative and professional occupations, Large employers and higher managerial and administrative occupations, Higher professional occupations, Lower managerial, administrative and professional occupations, Intermediate occupations, Small employers and own account workers, Lower supervisory and technical occupations, Semi-routine occupations, Routine occupations, Never worked, Long-term unemployed, and Full-time students. These are pooled across both males and females and are included as count variables in the dataset.
+
+Data on rural or urban classification of each constituency will also be used from the 2011 Rural Urban Classification of Westminster Parliamentary Constituencies \autocite{RuralUrbanClassification}, focusing on the total rural/urban population count in each constituency, as well as voteshare data \autocite{watsonGeneralElectionResults2024}. The voteshare data includes vote count and vote share from 1918 to 2019 but will be subset to include just data for the 2010 to 2019. This will be used as an indicator of the party competition for each election year within constituencies. As the constituency boundaries changed in 2010 \autocite{cracknell2010GeneralElection2024}, the analysis will focus just on the party competition for each election as opposed to political leaning of the constituency in past elections as well. An analysis of changes in vote share for each of the parties in England could provide a useful avenue for future research on this topic. 
+
+Several regression models will then be run with environmental mention counts as the outcome variable. One model will consider overall environmental mention counts with party and years coded as dummy variables. Then the data will be divided into subsets of party and year with interaction terms included to highlight other possible patterns and connections within the data. 
+	
+\newpage
+
+\section{Models and Results}
+
+
+\subsection{Descriptive Statistics}
+
+
+The text scraping accuracy results for environmental mentions is shown in Table~ \ref{tab:envaccuracy}. The first accuracy score of 88.66\% means that for every time the metadata lists the environment as a mentioned issue, my text-scraping methods also find at least 1 mention of an environmental-related word approximately 89\% of the time. This second accuracy score, in the scope of this project, shows that the machine learning OCR method used to scrape the text, as well as the dictionary used, has an accuracy of almost 90\%. This is considerably good given the large volume of data and automated text-scraping methods on leaflets that vary in image quality.
+
+The second accuracy score describes the frequency at which the metadata that was scraped from the OpenElections website lists the environment as one of the mentions during conditions in which the leaflet text that I scraped \textit{also} shows some mention of the environment. The score of 58.07\% indicates that, assuming my text-scraping methods are correct, the human coders only catch environmental mentions approximately 58.07\% of the time. 
+
+
+
+
+\vspace{0.5cm}
+
+
+\begin{table}[!htbp] 
+	\centering 
+	\captionsetup{justification=centering} % Center the caption
+	\caption{Accuracy of Text-Scraping Methods on Environmental Issues} 
+	\label{tab:envaccuracy} 
+	\begin{tabular}{lrrl}
+		\toprule
+		Condition & Count & Total & Accuracy \\
+		\midrule
+		Accuracy of OCR detection when 'Environment' is in metadata & 2417 & 2726 & 88.66\% \\
+		Accuracy of 'Economy' in metadata when OCR detects mentions & 2417 & 4162 & 58.07\% \\
+		\bottomrule
+	\end{tabular}\\
+\end{table}
+
+
+\vspace{0.5cm}
+
+As a robustness check to ensure that these results extend to the rest of the dataset, Table~\ref{tab:econaccuracy} displays the accuracy results for economy mentions as well. This table displays interesting results, such that the OCR methods used in tandem with the Laver Garry dictionary \autocite{laverEstimatingPolicyPositions2000} to detect mentions of the economy are accurate in almost 100\% of the cases where the human-coded metadata shows an economic mention in the leaflet. 
+
+Both Table~\ref{tab:econaccuracy} and Table~\ref{tab:envaccuracy} demonstrate a discrepancy in the human coded data versus the text scraped from the leaflet. It appears that in cases of both environmental and economic mentions that the OCR method detects more mentions of both topics. However, the accuracy score is quite high for detecting what has already been picked up by human coders. This would imply that the combination of the text scraping and the use of the Laver Garry dictionary is able to go beyond what is possible with human coders alone. Furthermore, this method could also be used in a further analysis to look at which words in each category specifically are used most frequently throughout the leaflets. 
+
+
+\vspace{1cm}
+
+\begin{table}[!htbp] 
+	\centering 
+	\captionsetup{justification=centering} % Center the caption
+	\caption{Accuracy of Text-Scraping Methods on Economic Issues} 
+	\label{tab:econaccuracy} 
+	\begin{tabular}{lrrl}
+		\toprule
+		Condition & Count & Total & Accuracy \\
+		\midrule
+		Accuracy of OCR detection when 'Environment' is in metadata & 5322 & 5373 & 99.05\% \\
+		Accuracy of 'Economy' in metadata when OCR detects mentions & 5322 & 7073 & 75.24\% \\
+		\bottomrule
+	\end{tabular}\\
+\end{table}
+
+
+\vspace{1cm}
+
+
+
+
+
+% Include the image with text wrapping
+\begin{wrapfigure}[35]{l}{0.58\textwidth}
+	\centering
+	\includegraphics[width=0.58\textwidth]{ukip_example.png}
+	\caption{OCR Method on UKIP Example}
+	\label{fig:ukip_example}
+\end{wrapfigure}
+
+
+%%
+
+
+One possible explanation for the variation between the accuracy levels regarding environmental mentions is that the human coders have inaccurately labeled the leaflets as having environmental mentions when none are actually mentioned. An example of this is in Figure~\ref{fig:ukip_example}\footnote{The unmarked leaflet is shown in the appendix for greater legibility}, where the metadata did include the environment as a mentioned topic, but the OCR method does not detect any mentions of the environment. Upon closer examination, it appears that the OCR method performs relatively well and that there does not seem to be any mention of the environment in either of the images pertaining to that leaflet. This further confirms that the OCR text-scraping method is robust enough to use for later analysis of variation among environmental mentions. 
+
+
+Additionally, it is unclear exactly how the human coders are deciding which categories are mentioned in the leaflets. The OpenElection website allows any site visitor to upload or code a leaflet based on mentions and issues in the images. This introduces a great amount of variation in how the leaflets are potentially classified, as individuals may vary in their knowledge of politics or individuals may not detect all of the issues on the leaflet. As the accuracy levels show that the OCR method detects a high proportion of what is found by human coders and, as shown in Figure~\ref{fig:ukip_example}, the metadata may not be entirely accurate, it seems as though the OCR method detects the same things that human coders would but goes beyond that to identify themes that require more political knowledge than the average person has.
+
+
+%total const mentions
+
+\begin{wrapfigure}[23]{l}{0.55\textwidth}
+	\centering
+	\includegraphics[width=0.55\textwidth]{overall_env_mentions_new.png}
+	\caption{Mean Environmental Mentions By Constituency}
+	\label{fig:meanenvbycon}
+\end{wrapfigure}
+
+
+
+
+The overall distribution of environmental mentions across England regardless of political party or election year is shown in Figure~\ref{fig:meanenvbycon}\footnote{Note: this figure only includes a narrower range of values, starting from the minimum value of 0 to the 90th percentile of the data in order to highlight more variation across constituencies. The overall map is shown in the appendix}. This groups the environmental mentions by constituency and then takes the mean for each of the constituencies. From this figure, it is clear that there is very little variation across all constituencies regardless of year or party (with the exception of North Devon which appears to have an unusually high number of environmental mentions). It is unsurprising that there is little variation in this map as most of the variance is expected to be driven by political party and election year. 
+
+
+
+In contrast, dividing the environmental mentions map by parties and election year shows considerably more variation. This is demonstrated in Figure~\ref{fig:parties_environmental_mentions} (Figures 4-8) for the 2010 Election with the Conservative, Green, Labour, Liberal Democrat, and UK Independence parties. Within these figures, it appears that the Conservative Party and Labour Party maps are relatively similar in variation, with similar constituencies showing up as most/least frequently mentioned. There appears to be slightly more variation in the Liberal Democrat map, with the Green Party and UK Independence Party maps appearing the most different. These results are interesting and unexpected as the Green Party seems to have relatively low numbers of mentions across all of England. This, however, may be caused because the Green Party is not considered to be one of the main parties in England, meaning that it is possible that there are simple less uploads of Green Party leaflets on the OpenElections website.
+
+
+
+
+
+
+
+\begin{figure}[H] % Use [H] to ensure the figure stays exactly where it is placed in the text
+	\centering
+	
+	% Row 1
+	\begin{minipage}[t]{0.335\textwidth}
+		\centering
+		\includegraphics[width=\textwidth,height=0.68\textheight,keepaspectratio]{plots/ConservativeParty_2010GeneralElection_Environmental_Mentions.png}
+		\caption{Conservative Party}
+	\end{minipage}\hfill
+	\begin{minipage}[t]{0.335\textwidth}
+		\centering
+		\includegraphics[width=\textwidth,height=0.68\textheight,keepaspectratio]{plots/GreenParty_2010GeneralElection_Environmental_Mentions.png}
+		\caption{Green Party}
+	\end{minipage}\hfill
+	\begin{minipage}[t]{0.335\textwidth}
+		\centering
+		\includegraphics[width=\textwidth,height=0.68\textheight,keepaspectratio]{plots/LabourParty_2010GeneralElection_Environmental_Mentions.png}
+		\caption{Labour Party}
+	\end{minipage}
+	
+	\vspace{0.1cm} % Adjust space between rows as needed
+	
+	% Row 2
+	\begin{minipage}[t]{0.335\textwidth}
+		\centering
+		\includegraphics[width=\textwidth,height=0.68\textheight,keepaspectratio]{plots/LiberalDemocrats_2010GeneralElection_Environmental_Mentions.png}
+		\caption{Liberal Democrats}
+	\end{minipage}\hfill
+	\begin{minipage}[t]{0.335\textwidth}
+		\centering
+		\includegraphics[width=\textwidth,height=0.68\textheight,keepaspectratio]{plots/UKIndependenceParty_2010GeneralElection_Environmental_Mentions.png}
+		\caption{UK Independence Party}
+	\end{minipage}
+	
+	\caption{Mean Environmental Mentions by Different Parties in the 2010 General Election}
+	\label{fig:parties_environmental_mentions}
+\end{figure}
+
+
+
+As shown in Figure~\ref{fig:count_by_year}, the highest proportion of leaflets came from the 2015 and 2010 elections, with numbers significantly dropping in the 2017 and 2019 elections. This may be partially explained due to a shift to more online campaign styles, as social media campaigning may help politicians win more votes \autocite{brightDoesCampaigningSocial2020}. Furthermore, the Green Party and the UK Independence Party have the lowest number of leaflets within the dataset, shown in Figure~\ref{fig:count_by_party_year}. The 2015 election contained the most number of leaflets for both of the aforementioned parties with the 2019 election showing the lowest number of leaflets for both parties. The Conservative, Labour, and Liberal Democrats contain more leaflets than the other two parties for each election year.  
+
+The distribution of environmental mentions, however, differs drastically from the overall distribution of leaflets by party and year. The Green Party, as to be expected, includes the highest percentage of environmental mentions for every election year included in the dataset. These mentions, aside from the 2015 election, continue to grow in percentage for each election year, such that environmental issues have been mentioned most in the 2017 and 2019 elections. All other included parties also show an increase in environmental mentions in the 2019 election, which may be caused by overall changes in environmental attitudes of the general public in recent years, as many voters have begun to see climate change as a primary topic in politics, leading politicians to be forced to incorporate these concerns in some way \autocite{burnsWillBrexitDegrade2020}.
+
+
+
+%descriptive stats
+
+
+
+
+
+
+
+
+% Count of Observations by Year
+\begin{figure}[H]  % Use [H] to place the figure exactly here
+	\centering
+	\includegraphics[width=\textwidth, height=0.7\textheight, keepaspectratio]{count_by_year.png} % Use full text width, adjust height
+	\caption{Count of Observations by Year}
+	\label{fig:count_by_year}
+\end{figure}
+
+
+As the descriptive statistics indicate significant variation in environmental mentions by year and party, 9 multivariate linear regression analyses were conducted. The first, shown in Table 3, includes both election year and political party as dummy variables in the predictors. Table 4 shows the next four models which include political party as dummy variables, with each regression referring to each election year. Table 5 shows regression results for each of the political parties.
+
+
+
+% Count of Observations by Party and Year
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth, height=0.7\textheight, keepaspectratio]{count_by_party_year.png} % Use full text width, adjust height
+	\caption{Count of Observations by Party and Year}
+	\label{fig:count_by_party_year}
+\end{figure}
+
+
+
+\subsection{Regression Results - Main Model}
+
+
+Within the main model results (Table~\ref{tab:main_model}), we can see that political party, election year, and unemployment are shown to be significantly related to environmental mention count. Specifically, for the Conservative Party, the average environmental mention count score is 12.97 points lower compared to the Green Party. For the Labour Party, the average environmental mention count score is 12.02 points lower compared to the Green Party. For the Liberal Democrats, the average environmental mention count score is 11.85 points lower compared to the Green Party. Lastly, for the UK Independence Party, the average environmental mention count score is 13.35 points lower compared to the Green Party. These results are all significant at the $p<0.01$ level.
+
+For the 2017 election, the average environmental mention count score was 1.56 points lower compared to the 2010 election ($p<0.01$). The 2015 and 2019 elections showed no significant difference to the 2010 election. 
+
+For every one unit increase in the count of individuals who are long-term unemployed, the environmental mention count decreases by 0.001 ($p<0.1$). The coefficients for all weather data, the total student population and other variables, like total rural and urban populations, were not statistically significant.
+
+
+% Your content before the specific page
+\newpage
+
+% Customize the page style for this specific page
+\fancypagestyle{special}{%
+	\fancyhf{} % clear all header and footer fields
+	\renewcommand{\headrulewidth}{0pt} % remove header line
+	\renewcommand{\footrulewidth}{0pt} % remove footer line
+	\fancyfoot[R]{\thepage} % put the page number on the right side in the footer
+}
+
+% Apply the style to the current page
+\thispagestyle{special}
+
+
+
+% Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com
+% Date and time: Fri, Aug 09, 2024 - 01:13:20
+\begin{table}[!htbp] \centering 
+	\caption{Main Model Results} 
+	\label{tab:main_model} 
+	\footnotesize 
+	\begin{tabular}{@{\extracolsep{5pt}}lc} 
+		\\[-1.8ex]\hline 
+		\hline \\[-1.8ex] 
+		& \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
+		\cline{2-2} 
+		\\[-1.8ex] & environment \\ 
+		\hline \\[-1.8ex] 
+		Conservative Party & $-$12.97$^{***}$ (0.40) \\ 
+		Labour Party & $-$12.02$^{***}$ (0.39) \\ 
+		Liberal Democrats & $-$11.85$^{***}$ (0.40) \\ 
+		UK Independence Party & $-$13.35$^{***}$ (0.51) \\ 
+		2015 Election & $-$1.06 (0.75) \\ 
+		2017 Election & $-$1.56$^{***}$ (0.60) \\ 
+		2019 Election & 0.92 (0.57) \\ 
+		Median Age & $-$0.05 (0.08) \\ 
+		Total Rural Population & $-$0.0000 (0.0001) \\ 
+		Total Urban Population & $-$0.0000 (0.0001) \\ 
+		Higher Managerial& $-$0.0002 (0.0002) \\ 
+		Lower Managerial & 0.0001 (0.0002) \\ 
+		Intermediate Occupation & 0.0001 (0.0002) \\ 
+		Small Employers & $-$0.0001 (0.0002) \\ 
+		Lower Supervisory & 0.0001 (0.0004) \\ 
+		Semi-Routine Occupations& $-$0.0000 (0.0003) \\ 
+		Routine Occupations & $-$0.0002 (0.0002) \\ 
+		Never Worked & 0.0003 (0.0002) \\ 
+		Long-Term Unemployed & $-$0.001$^{*}$ (0.001) \\ 
+		Total Student Count & 0.0000 (0.0001) \\ 
+		Yearly Average Air Temperature & $-$1.67 (1.81) \\ 
+		Yearly Average Minimum Air Temperature & 1.27 (1.00) \\ 
+		Yearly Average Maximum Air Temperature & $-$0.21 (0.87) \\ 
+		Yearly Average Precipitation Total & $-$0.02 (0.01) \\ 
+		Yearly Average Windspeed & $-$0.15 (0.09) \\ 
+		Yearly Average  Sea-Level Air Pressure & $-$0.05 (0.45) \\ 
+		Yearly Average Sunshine Minutes & 0.0003 (0.0003) \\ 
+		Liberal Democrat Vote Share & 1.02 (2.03) \\ 
+		Labour Vote Share & 1.01 (2.03) \\ 
+		Other Party Vote Share & 1.00 (2.03) \\ 
+		Conservative Vote Share & 1.03 (2.03) \\ 
+		Flood Alerts & 0.0000 (0.0000) \\ 
+		Flood Warnings & $-$0.0000 (0.0000) \\ 
+		Severe Flood Warnings & 0.0001 (0.0001) \\ 
+		Flood Watches & $-$0.0000 (0.0000) \\ 
+		Constant & $-$21.89 (497.42) \\ 
+		\hline \\[-1.8ex] 
+		Observations & 1159 \\ 
+		R$^{2}$ & 0.57 \\ 
+		Adjusted R$^{2}$ & 0.56 \\ 
+		\hline 
+		\hline \\[-1.8ex] 
+		\textit{Note:}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+	\end{tabular} 
+\end{table} 
+
+\newpage
+
+% Back to normal page style
+\pagestyle{plain}
+
+\subsection{Interaction Effects}
+
+Table~\ref{tab:interactive} shows the interaction effects between political parties and election years. The interactions show the specific effect of each election year together with each political party. 
+
+For the Conservative Party the interaction terms indicate that environmental mentions were significantly more affected in the 2015 and 2017 elections compared to the 2010 election. The interaction effects show increases of 3.91 points in 2015 and 7.61 points in 2017, compared to the 2010 election ($p<0.01$). However, the interaction effect for the 2019 election was not statistically significant.
+
+For the Labour Party, the interaction terms show similar trends to the Conservative Party, with significant increases in environmental mentions in the 2015 and 2017 elections, with the 2015 election showing an increase of 3.93 points and 8.33 points in 2017 compared to 2010 ($p<0.01$). The 2019 election also showed no significant change compared to 2010.
+
+For the Liberal Democrats, the interaction effects also reveal increases in environmental mentions in 2015 and 2017 compared to the 2010 election, with increases of 3.91 points in 2015 and 5.68 points in 2017 ($p<0.01$). 
+
+For the UK Independence Party, the interaction effects indicate significant increases in 2015 and 2017, with increases of 4.47 points in 2015 and 8.20 points in 2017 compared to the 2010 election ($p<0.01$). 
+
+This model reveals other factors involved in the presence of environmental mentions in political campaigns. In this model, average precipitation was shown to be significant, with every one unit change in precipitation associated with a 0.02 decrease in mentions. The minimum air temperature in $^\circ$C was also statistically significant, with every one unit increase in the minimum temperature associated with a 1.70 increase in environmental mentions. Lastly, the count of those who have are long-term unemployed in a constituency was associated with an decrease of 0.001 environmental mentions ($p<0.1$). 
+
+The interaction model overall appears to perform better than the additive model, such that the $R^2$ value increased to 0.61 from 0.57. As this project was primarily exploratory given the use of novel methods on data that has not been previously analysed, this is a satisfactory result, as 61\% of total variance in environmental mentions was explained by the factors shown in this model.
+
+
+
+
+
+% Percentage of Environment Mentions by Party and Year
+%\begin{wrapfigure}[14]{l}{0.5\textwidth} % Wraps figure to the left, width is 50% of text width
+%	\centering
+%	\includegraphics[width=0.48\textwidth]{env_mentions_percentage.png} % Adjusted width slightly less than the wrapfigure width
+%	\caption{Percentage of Environment Mentions by Party and Year}
+%	\label{fig:env_mentions_percentage}
+%\end{wrapfigure}
+
+% Your content before the specific page
+\newpage
+
+% Customize the page style for this specific page
+\fancypagestyle{special}{%
+	\fancyhf{} % clear all header and footer fields
+	\renewcommand{\headrulewidth}{0pt} % remove header line
+	\renewcommand{\footrulewidth}{0pt} % remove footer line
+	\fancyfoot[R]{\thepage} % put the page number on the right side in the footer
+}
+
+% Apply the style to the current page
+\thispagestyle{special}
+
+
+
+
+
+
+% Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com
+% Date and time: Fri, Aug 09, 2024 - 01:12:12
+\begin{table}[H] \centering 
+	\caption{Interactive Model} 
+	\label{tab:interactive} 
+	\footnotesize 
+	\begin{tabular}{@{\extracolsep{5pt}}lc} 
+		\\[-1.8ex]\hline 
+		\hline \\[-1.8ex] 
+		& \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
+		\cline{2-2} 
+		\\[-1.8ex] & environment \\ 
+		\hline \\[-1.8ex] 
+		Conservative Party & $-$16.75$^{***}$ (0.99) \\ 
+		Labour Party & $-$16.90$^{***}$ (0.98) \\ 
+		Liberal Democras Party & $-$15.15$^{***}$ (0.96) \\ 
+		UK Independence Party & $-$17.82$^{***}$ (1.09) \\ 
+		2015 Election & $-$4.99$^{***}$ (1.21) \\ 
+		2017 Election& $-$8.08$^{***}$ (1.12) \\ 
+		2019 Election& 0.98 (1.25) \\ 
+		Median Age & $-$0.09 (0.07) \\ 
+		Total Rural Population & $-$0.0000 (0.0001) \\ 
+		Total Urban Population & $-$0.0000 (0.0001) \\ 
+		Higher Managerial & $-$0.0002 (0.0002) \\ 
+		Lower Managerial & 0.0002 (0.0002) \\ 
+		Intermediate\ Occupations & 0.0000 (0.0002) \\ 
+		Small Employers & $-$0.0000 (0.0002) \\ 
+		Lower Supervisory Occupations & 0.0001 (0.0003) \\ 
+		Semi-Routine Occupations & 0.0000 (0.0002) \\ 
+		Routine Occupations & $-$0.0002 (0.0002) \\ 
+		Never Worked & 0.0003 (0.0002) \\ 
+		Long Term Unemployed & $-$0.001$^{*}$ (0.001) \\ 
+		Total Student Count & 0.0000 (0.0001) \\ 
+		Yearly Average Air Temperature & $-$2.56 (1.74) \\ 
+		Yearly Average Minimum Air Temperature & 1.70$^{*}$ (0.96) \\ 
+		Yearly Average Maximum Air Temperature & 0.24 (0.84) \\ 
+		Yearly Average Precipitation Total & $-$0.02$^{*}$ (0.01) \\ 
+		Yearly Average Windspeed & $-$0.14 (0.09) \\ 
+		Yearly Average  Sea-Level Air Pressure & $-$0.07 (0.44) \\ 
+		Yearly Average Sunshine Minutes & 0.0002 (0.0003) \\ 
+		Liberal Democrat Vote Share & $-$0.07 (1.96) \\ 
+		Labour Vote Share & $-$0.08 (1.96) \\ 
+		Other Party Vote Share & $-$0.06 (1.96) \\ 
+		Conservative Vote Share & $-$0.05 (1.96) \\ 
+		Flood Alerts & 0.0000 (0.0000) \\ 
+		Flood Warnings & $-$0.0000 (0.0000) \\ 
+		Severe Flood Warnings & 0.0001 (0.0001) \\ 
+		Flood Watches & $-$0.0000 (0.0000) \\ 
+		Conservative Party:2015 Election & 3.91$^{***}$ (1.23) \\ 
+		Labour Party:2015 Election& 3.93$^{***}$ (1.23) \\ 
+		Liberal Democrats:2015 Election & 3.91$^{***}$ (1.20) \\ 
+		UK Independence Party:2015 Election & 4.47$^{***}$ (1.36) \\ 
+		Conservative Party:2017 Election & 7.61$^{***}$ (1.18) \\ 
+		Labour Party:2017 Election & 8.33$^{***}$ (1.15) \\ 
+		Liberal Democrats:2017 Election & 5.68$^{***}$ (1.16) \\ 
+		UK Independence Party:2017 Election & 8.20$^{***}$ (1.38) \\ 
+		Conservative Party:2019 Election & $-$1.01 (1.32) \\ 
+		Labour Party:2019 Election & 1.50 (1.32) \\ 
+		Liberal Democrats:2019 Election & $-$0.92 (1.30) \\ 
+		UK Independence Party:2019 Election & $-$0.67 (2.26) \\ 
+		Constant & 112.48 (479.42) \\ 
+		\hline \\[-1.8ex] 
+		Observations & 1159 \\ 
+		R$^{2}$ & 0.61 \\ 
+		Adjusted R$^{2}$ & 0.59 \\ 
+		\hline 
+		\hline \\[-1.8ex] 
+		\textit{Note:}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+	\end{tabular} 
+\end{table} 
+
+
+\newpage
+
+% Back to normal page style
+\pagestyle{plain}
+
+%other table
+Although the results from Tables~\ref{tab:main_model} and \ref{tab:interactive} are useful in identifying which elections are significantly different from one another as well as confirming that political party has a major impact on environmental mentions, it does little to answer the overall question of how environmental mentions change within one political party and one year. To further investigate the primary research question of what is causing variation between constituencies within the same party and election year, tables~\ref{tab:cons2017}$-$\ref{tab:lab2019} show which variables were significant in subsetted data by year and party.
+
+%Significant Variables for ConservativeParty 2017
+\begin{table}[h!]
+	\caption{Significant Variables for Regression Dataset ConservativeParty 2017}
+	\label{tab:cons2017}
+	\centering
+	\begin{tabular}{|l|r|r|}
+		\hline
+		\textbf{Variable} & \textbf{Coefficient} & \textbf{p-value} \\
+		\hline
+		Total Rural Population & -0.00055 & 0.0234 \\
+		Total Urban Population & -0.00047 & 0.0483 \\
+		Higher Managerial & 0.00111 & 0.0325 \\
+		Small Employers & 0.00122 & 0.0230 \\
+		Lower Supervisory & 0.00249 & 0.0089 \\
+		Long Term Unemployed & -0.00350 & 0.0703 \\
+		Total Student Count & 0.00057 & 0.0588 \\
+		Yearly Average Sunshine Minutes & 0.00133 & 0.0507 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+% Significant Variables for ConservativeParty 2019
+\begin{table}[h!]
+	\caption{Significant Variables for Regression Dataset ConservativeParty 2019}
+	\label{tab:cons2019}
+	\centering
+	\begin{tabular}{|l|r|r|}
+		\hline
+		\textbf{Variable} & \textbf{Coefficient} & \textbf{p-value} \\
+		\hline
+		Yearly Average Sunshine Minutes & 0.00176 & 0.0668 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+% Significant Variables for GreenParty 2015
+\begin{table}[h!]
+	\caption{Significant Variables for Regression Dataset GreenParty 2015}
+	\label{tab:green2015}
+	\centering
+	\begin{tabular}{|l|r|r|}
+		\hline
+		\textbf{Variable} & \textbf{Coefficient} & \textbf{p-value} \\
+		\hline
+		Flood Alerts & 0.00026 & 0.0783 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+% Significant Variables for LabourParty 2010
+\begin{table}[h!]
+	\caption{Significant Variables for Regression Dataset LabourParty 2010}
+	\label{tab:lab2010}
+	\centering
+	\begin{tabular}{|l|r|r|}
+		\hline
+		\textbf{Variable} & \textbf{Coefficient} & \textbf{p-value} \\
+		\hline
+		Small Employers & 0.00186 & 0.0650 \\
+		Yearly Average Windspeed & -0.76619 & 0.0771 \\
+		Flood Alerts & 0.00263 & 0.0852 \\
+		Flood Warnings & -0.00042 & 0.0358 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+% Significant Variables for LabourParty 2019
+\begin{table}[h!]
+	\caption{Significant Variables for Regression Dataset LabourParty 2019}
+	\label{tab:lab2019}
+	\centering
+	\begin{tabular}{|l|r|r|}
+		\hline
+		\textbf{Variable} & \textbf{Coefficient} & \textbf{p-value} \\
+		\hline
+		Intercept & 4653.90 & 0.0149 \\
+		Routine Occupations & -0.00205 & 0.0214 \\
+		Yearly Average Maximum Air Temperature & 9.8964 & 0.0280 \\
+		Yearly Average Windspeed & 0.8309 & 0.0448 \\
+		Yearly Average  Sea-Level Air Pressure & -3.9640 & 0.0113 \\
+		Severe Flood Warnings & -0.00147 & 0.0725 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\paragraph{Interpretations}
+
+For the Conservative Party 2017 dataset, rural and urban population, counts of higher managerial occupants, small employers, lower supervisory occupants, those who are long-term unemployed, total student count, and average sunlight hours were all shown to be significantly related to environmental mentions in election leaflets. The negative coefficient for the Total Rural Population (\(-0.00055\), \(p = 0.0234\)) means that an increase in the rural population is associated with fewer environmental mentions. Similarly, a higher total urban population is linked to fewer mentions of environmental issues (\(-0.00047\), \(p = 0.0483\)). Regarding occupations, the count of those in higher managerial positions is positively associated with environmental mentions (\(0.00111\), \(p = 0.0325\)), as was the number of small employers (\(0.00122\), \(p = 0.0230\)). An increase in those in lower supervisory positions was also positively correlated with environmental mentions (\(0.00249\), \(p = 0.0089\)). Regarding those not working or unemployed, constituencies with higher counts of individuals who are long-term unemployed (\(-0.00350\), \(p = 0.0703\)) or have never worked and are unemployed (\(-0.00350\), \(p = 0.0703\)) have fewer environmental mentions. Furthermore, as the total count of students increases in a constituency, the count of environmental mentions increases as well (\(0.00057\), (\(p = 0.0588\)). Lastly, the yearly average sunshine (\(0.00133\), \(p = 0.0507\)) indicates that an increase of sunlight hours is associated with increased environmental mentions.
+
+In the Conservative Party 2019 dataset, the analysis shows that the only significant variable was yearly average sunshine, which was positively associated with mentions (\(0.00176\), \(p = 0.0668\)).
+
+
+For the Green Party 2015 dataset, the positive coefficient for Flood Alert (\(0.00026\), \(p = 0.0783\)) indicates that increased flood alerts are associated with more environmental mentions.
+
+
+In the Labour Party 2010 dataset, the count of small employers, average windspeed, and counts for flood alerts and warnings were shown to be significantly related to environmental mentions. The count of Small Employers is positively associated with mentions. (\(0.00186\), \(p = 0.0650\)). Additionally, as the yearly average wind speed increases, so does the environmental mention count (\(-0.76619\), \(p = 0.0771\)). Lastly, flood alerts and warnings were both associated with environmental mentions but in different directions. For flood alerts, there was a positive association such that more flood alerts was associated with more environmental mentions (\(0.00263\), \(p = 0.0852\)). However, flood warnings were negatively related to mentions (\(-0.00042\), \(p = 0.0358\)).
+
+
+For the Labour Party 2019 dataset, routine occupation count, maximum temperature, average windspeed, average sea-level air pressure, and severe flood warnings were associated with environmental mentions. The negative coefficient for Routine Occupations (\(-0.00205\), \(p = 0.0214\)) indicates that more routine occupations are associated with fewer environmental mentions. The positive coefficient for yearly average maximum temperature (\(9.8964\), \(p = 0.0280\)) suggests that higher maximum temperatures are linked to more environmental mentions. The yearly average wind speed (\(0.8309\), \(p = 0.0448\)) indicates that higher wind speeds correlate with more environmental mentions. However, the yearly average sea-level pressure (\(-3.9640\), \(p = 0.0113\)) suggests that higher sea-level pressure is associated with fewer environmental mentions. Finally, Severe Flood Warnings (\(-0.00147\), \(p = 0.0725\)) indicate that more severe flood warnings are associated with fewer environmental mentions.
+	
+
+
+\section{Discussion}
+
+
+The time period analysed in this project provides an interesting and complicated political atmosphere to navigate. Given the Brexit referendum in 2016, there was a shift towards two-party politics in England in the 2017 election \autocite{hoboltBrexit2017UK2018,prosserStrangeDeathMultiparty2018}, as voters who may have previously voted for the UK Independence shifted loyalty to the Conservative Party and Remain voters were more inclined to vote for the Labour Party. This trend was continued in 2019, which saw greater efficacy on the part of Conservatives at unifying Leave voters, giving the party an advantage over the Labour party who struggled to unify voters in this way \autocite{cuttsBrexit2019General2020}. However, the 2017 election showed Labour's changing demographic of supporters, as those that are younger and in more diverse areas demonstrated more inclination to vote for Labour \autocite{heath2017GeneralElection2017}. The changing dynamic of UK politics following the Brexit referendum may help explain why factors such as vote share of the major parties in previous elections showed no significant effect in any of the analyses in this study. In the 2010 election, political geography and marginality of constituencies mattered greatly in campaigning \autocite{johnstonLearningElectoralGeography2013}. Although this may have been significant to some degree in all of the elections from 2010-2019, the political discourse surrounding Brexit introduces a new angle to the political campaign that may have changed campaign strategy in ways unforeseen by past literature.
+
+Although vote share of the main parties was not significant in any analysis shown, election year, political party, amount of individuals in various professional levels, unemployment rate, weather data, flood alerts, and student count all were shown to be significant in at least one of the models. Within the main model, political party proved to be the most significant indicator of environmental mentions. This is expected, given that past literature has overwhelmingly shown that political parties have different campaign strategies. Furthermore, as the reference category was the Green Party, it is unsurprising that no party had a similar mention score for environmental factors. 
+
+Within both the main and interactive models, only certain elections were significantly different than the 2010 election and this also varied by political party. For instance, the 2017 election was shown to be the most statistically significantly different from the 2010 election for all of the parties in the analysis. The 2019 election showed no significant difference from the 2010 election for any of the parties. Given the context of Brexit discussed earlier, it is predictable that the 2017 and 2019 elections included different campaign strategies than the 2010 and 2015 elections. The UK Independence Party remained unaffected by the election year in its mentions of the environment, which is an expected outcome, given that the party's main goal is concerned with the UK leaving the EU \autocite{lynchUKIndependenceParty2012}.
+
+Brexit may have also had environmental policy specific effects as well. Some anticipated that Brexit would involve a lessening of environmental policy \autocite{burnsBrexitUKEnvironmental2018}, but could also provide an opportunity to instead ensure environmental protection \autocite{nwankwoBrexitCriticalJuncture2018}. Others have pointed out as well that, regardless of Brexit, it is unlikely for UK environmental policies to change  because of how intertwined UK policies have become with those of the EU  \autocite{zitoFutureEuropeanUnion2020} as well as the fact that the environment has become a more important political topic to the public \autocite{burnsWillBrexitDegrade2020}. As the timing of the elections in this project span from pre to post-Brexit, this can help explain why election year may be a significant factor as well as why these results are not consistently moving in only one direction.
+
+The results of the main model analysis show that the UK Independence Party includes the lowest number of environmental mentions compared to the Green Party, followed by the Conservatives, the Labour Party, and the Liberal Democrats. Furthermore, the 2017 election overall showed the lowest number of environmental mentions relative to the 2010 election. Although not statistically significant, this decline in mentions began in 2015 but 2019 then showed an increase relative to 2010 in the environmental mention count. For the Green Party in the 2010 election, used as the overall baseline in Table~\ref{tab:main_model}, the analysis shows that as the number of individuals that are long-term unemployed is associated with a decrease in environmental mentions. This implies that in constituencies with a higher unemployment rate, implying lower overall socioeconomic status (SES), it is less likely for environmental issues to be mentioned. It is important to mention here that the category for never worked and for long-term unemployed are separate in the census data. The only category that was shown to be significant in any of the models was that for long-term unemployment count, meaning that individuals that are unemployed and have never worked do not appear to have an effect on the environmental mentions in the same way that long-term unemployed individuals do.
+
+
+The interactive model, which performed better overall than the additive model, highlights several other relationships that appear to have been missed in the original model. For instance, this model shows that, with 2010 as the baseline election year again, that following the UK Independence Party, the Labour Party had a lower mention score than the Conservative Party, relative to the Green Party. Furthermore, holding all variables constant and with the 2010 election as the reference category, the 2015 election was also significantly different than the 2010 in mention count, although with not nearly as extreme of an effect as in 2017. Furthermore, this model showed the average minimum temperature as significant, such that higher minimum temperatures, implying an overall less extreme winter, is associated with more environmental mentions. This is in line with what would be expected, as lower temperatures that are less extreme would perhaps indicate to individuals that there is an effect of global warming, thus causing politicians to mention the issue more in these areas. However, the average maximum temperature, interestingly, does not seem to be significant in predicting mention counts. It could be inferred that this result implies that a warmer winter is more salient to individuals and politicians than a change in summer temperature.
+
+The interactive model shows that precipitation is inversely related to mentions; as precipitation increases then mentions decrease. This result goes against the hypothesis that any increase in extreme weather events would lead to an increase in environmental mentions, but appears to be in line with the temperature results discussed above. Higher rainfall would likely indicate a cooling rather than warming effect in temperature patterns to individuals. As discussed earlier, the results of this analysis seem to imply that individuals and politicians are more responsive to changes that imply a warming effect rather than a cooling one. Flood warning or alert data, as in the additive model, does not appear to be significant.
+
+
+Within the party-year specific regression results, we are able to see that certain control variables are only significant in these specific cases. For instance, in the 2017 election within the Conservative party, rural and urban population counts are related to environmental mentions, such that an increase in the numbers of both populations is related to less environmental mentions by constituency. This is interesting as it appears that it is not necessarily the presence of just the urban or rural populations that has an impact on campaigns, but that populations with a high number of either is related to less environmental mentions. Previous literature showed a complex relationship between urban and rural areas and the environment, these results highlight that different parties may choose to campaign differently based on the rural/urban composition of a constituency and these results further confirm complexity in understanding the impact of these populations on campaigns. 
+
+Additionally, both a higher count of small employers and those in lower supervisory roles was associated with more environmental mentions, meaning that higher working class populations lead to more environmental mentions. Long-term unemployment count is then negatively related to mention counts. Lastly, student count and monthly sunshine minutes are associated with more environmental mentions. Monthly sunlight minutes are also positively related to counts for the Conservative Party in 2019.
+
+As young people are shown to be a potential driving force in keeping environmental issues central to UK politics \autocite{burnsWillBrexitDegrade2020}, it makes sense that the number of students in a constituency would increase how often the environment is discussed in campaigns, as was shown in the 2017 election for the Conservative party. What is surprising, however, is that this result only appeared in this specific model. It may be useful in future research to focus specifically on interactions between parties and election years to fully understand differences in campaign strategies pertaining to environmental issues.
+
+Within the Green Party, in the 2015 election, we see that more flood alerts were associated with more mentions. This is in line with previous research showing that natural disasters lead to public opinion change towards climate change. This variable also has a significant positive effect for the Labour Party in 2010. The effect of floods is not consistent though across all severity levels. Flood warnings, in constrast, are associated with less environmental mentions for the Labour Party in 2010 and severe flood warnings are also associated with lower mentions for the Labour Party in 2019. 
+
+The Labour Party overall also shows that several other control factors were significant in the 2017 and 2019 elections. More small employers were associated with more environmental mentions and higher windspeed was associated with less mentions. The effect of windspeed was, however, reversed in the 2019 election, which showed that higher windspeed was associated with higher environmental mentions. The effect of windspeed on mentions is a confusing result as is the effect of flood warnings of various severity. This inconsistency in the direction of the relationship implies that there are perhaps underlying mechanisms that are unclear in how individuals and politicians perceive these weather events. As \textcite{osberghausCausalEffectFlood2019} discuss, socioeconomic status and flood damage might interact, such that those strongly affected by floods but do not have excess financial resources may invest in property restoration rather than overall green activities. This may explain why regular or severe flood warnings were associated with less environmental mentions, as these communities may have been more concerned with economic topics due to high property damage, while communities with only flood alerts may have experienced less damage and therefore have the resources and attention to devote to environmental topics.
+
+It is unclear  exactly how and for which parties environmental/weather events have an impact. As this research is largely exploratory given the novel aspect of the methods and research question, this opens the door for future research to examine these relationships in more detail. A potential consideration may be to look deeper into solar and wind power and its relation to England's political climate. Another consideration concerns property damage compared to general perceived weather changes. This could involve exploring other topics covered in the leaflets to explore whether these are better at explaining variation.
+
+
+\subsection{Limitations}
+
+As this study focused primarily on text scraping and analysis methods of election leaflet images, there are many avenues for future research that were not fully explored in this project. For instance, this project features several limitations in terms of how weather events affect various groups of people. Future research could utilise media data to gain a fuller understanding of which communities are affected by climate change, as suggested by \textcite{siscoEffectsWeatherExperiences2021}. 
+
+Additionally, this project condensed all forms of environmental mentions into one overarching category where all words regarding the environment or climate were treated the same. This limits the scope and full understanding of how politicians discuss the environment. Future research could perform an analysis of each subcategory of environmental issues to see where and why variation occurs across parties and constituencies.
+
+Lastly, as this project relied on data from many different sources and was converted to the constituency level regardless of its original form, a substantial amount of cases were lost for the final analysis. This is another limitation that should be addressed in future studies.
+	
+
+\section{Conclusion}
+
+This study uses novel methods to explore variations in campaign strategy across constituencies in England. Specifically, the focus is on environmental issues in relation to weather and natural disasters, controlling for vote share, student count, occupation, age, student count, etc. The results of this study highlight that the main mechanism behind differences in leaflets has to do mostly with the political party and election year of which the leaflet came from, which is unsurprising given that past research \autocite{pogorelisIssueSalienceRegional2005} has shown that political parties share different goals and also have different campaign strategies and resources. 
+
+Several models were run to explore these relationships, with the overarching finding that there is significant interaction between political party and election year in determining both which factors are significant and in which direction they are related to politicians mentioning environmental issues in the leaflets distributed to each constituency.
+
+Furthermore, this project allows for large amounts of future research and highlights several issues with previous methods of analysis on political leaflets. For instance, the OCR text-detection methods used to scrape text from the leaflets appeared to accurately detect much of what was already detected by humans, but found more instances of both environmental and economic mentions. The text-detection methods also allowed for a quantitative measure of how many words or phrases were related to the environment, rather than simple coding of whether or not the environment was listed. The accuracy of the OCR methods introduce this method as one that could change the future of campaign research.
+
+ 
+
+
+
+\newpage
+
+
+\section{Appendix}
+
+\subsection{ Models Divided By Year and Party}
+
+% First Table: Models Divided by Year
+
+
+% Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com
+% Date and time: Tue, Aug 06, 2024 - 17:56:19
+\begin{table}[!htbp] \centering 
+	\caption{Models Divided by Year} 
+	\label{} 
+	\footnotesize 
+	\begin{adjustbox}{width=\textwidth}
+		\begin{tabular}{@{\extracolsep{5pt}}lcccc} 
+			\\[-1.8ex]\hline 
+			\hline \\[-1.8ex] 
+			& \multicolumn{4}{c}{\textit{Dependent variable:}} \\ 
+			\cline{2-5} 
+			\\[-1.8ex] & \multicolumn{4}{c}{environment} \\ 
+			\\[-1.8ex] & (1) & (2) & (3) & (4)\\ 
+			\hline \\[-1.8ex] 
+			Party Conservative Party & $-$17.23$^{***}$ (1.10) & $-$13.06$^{***}$ (0.95) & $-$9.17$^{***}$ (0.49) & $-$17.72$^{***}$ (0.93) \\ 
+			Party Labour Party & $-$17.05$^{***}$ (1.09) & $-$12.98$^{***}$ (0.95) & $-$8.63$^{***}$ (0.46) & $-$15.19$^{***}$ (0.95) \\ 
+			Party Liberal Democrats & $-$15.34$^{***}$ (1.09) & $-$11.31$^{***}$ (0.93) & $-$9.52$^{***}$ (0.49) & $-$15.90$^{***}$ (0.93) \\ 
+			Party UK Independence Party & $-$18.31$^{***}$ (1.20) & $-$13.64$^{***}$ (1.05) & $-$9.53$^{***}$ (0.64) & $-$18.52$^{***}$ (2.09) \\ 
+			Median\_Age & $-$0.17 (0.22) & $-$0.22 (0.34) & 0.11 (0.10) & $-$0.04 (0.17) \\ 
+			Total\_Rural\_Population & 0.0000 (0.0003) & 0.001$^{**}$ (0.001) & $-$0.0001 (0.0001) & 0.0001 (0.0002) \\ 
+			Total\_Urban\_Population & 0.0001 (0.0003) & 0.001$^{**}$ (0.0005) & $-$0.0000 (0.0001) & 0.0001 (0.0002) \\ 
+			Higher\_Managerial & $-$0.001 (0.001) & $-$0.002$^{**}$ (0.001) & 0.0002 (0.0002) & 0.0002 (0.0004) \\ 
+			Lower\_Managerial & 0.0004 (0.001) & $-$0.002 (0.001) & $-$0.0000 (0.0002) & $-$0.0004 (0.0004) \\ 
+			Intermediate\_Occupations & 0.0000 (0.001) & $-$0.001 (0.001) & 0.0000 (0.0003) & $-$0.0004 (0.0005) \\ 
+			Small\_Employers & 0.001 (0.001) & $-$0.001 (0.001) & 0.0000 (0.0002) & $-$0.0000 (0.0005) \\ 
+			Lower\_Supervisory & 0.001 (0.001) & $-$0.001 (0.002) & 0.0001 (0.0005) & 0.001 (0.001) \\ 
+			Semi\_Routine & $-$0.001 (0.001) & $-$0.003$^{*}$ (0.001) & 0.0002 (0.0003) & 0.001 (0.001) \\ 
+			Routine\_Occupations & $-$0.0000 (0.001) & $-$0.001 (0.001) & 0.0000 (0.0003) & $-$0.002$^{***}$ (0.001) \\ 
+			Never\_Worked\_Unemployed & $-$0.001 (0.003) & $-$0.002 (0.004) & $-$0.0002 (0.001) & $-$0.002 (0.002) \\ 
+			Never\_Worked & 0.001 (0.004) & $-$0.002 (0.01) & 0.0002 (0.001) & 0.003 (0.002) \\ 
+			Long\_Term\_Unemployed &  &  &  &  \\ 
+			Total\_Students\_Count & $-$0.0001 (0.0003) & $-$0.001$^{**}$ (0.0004) & 0.0001 (0.0001) & $-$0.0001 (0.0002) \\ 
+			yearly\_avg\_tavg & $-$1.74 (6.49) & $-$8.18 (12.43) & 1.74 (2.64) & $-$1.85 (4.51) \\ 
+			yearly\_avg\_tmin & 1.32 (3.40) & 4.64 (6.60) & $-$0.41 (1.45) & $-$0.65 (2.58) \\ 
+			yearly\_avg\_tmax & $-$1.10 (3.68) & 3.94 (4.62) & $-$1.83 (1.13) & 3.46$^{*}$ (2.06) \\ 
+			yearly\_avg\_prcp & $-$0.02 (0.06) & 0.03 (0.09) & $-$0.04$^{**}$ (0.02) & 0.003 (0.02) \\ 
+			yearly\_avg\_wspd & $-$0.37 (0.31) & 0.12 (0.52) & $-$0.15 (0.13) & 0.43$^{**}$ (0.22) \\ 
+			yearly\_avg\_pres & 1.99 (2.49) & $-$2.35 (2.63) & 0.96$^{*}$ (0.53) & $-$2.97$^{***}$ (0.89) \\ 
+			yearly\_avg\_tsun & 0.0001 (0.001) & $-$0.001 (0.002) & $-$0.0004 (0.0004) & 0.002$^{***}$ (0.001) \\ 
+			lib\_share & $-$0.04 (0.06) & $-$0.04 (0.09) & $-$0.01 (0.03) & $-$0.04 (0.05) \\ 
+			lab\_share & $-$0.04 (0.06) & $-$0.04 (0.09) & $-$0.01 (0.03) & $-$0.04 (0.05) \\ 
+			oth\_share & $-$0.04 (0.06) & $-$0.04 (0.09) & $-$0.01 (0.03) & $-$0.04 (0.05) \\ 
+			con\_share & $-$0.04 (0.06) & $-$0.04 (0.09) & $-$0.01 (0.03) & $-$0.04 (0.05) \\ 
+			Flood.Alert & 0.002 (0.001) & 0.0000 (0.0000) & 0.0000 (0.0000) & 0.0000 (0.0000) \\ 
+			Flood.Warning & $-$0.0003$^{**}$ (0.0001) & $-$0.0000 (0.0000) & $-$0.0000 (0.0000) & 0.0000 (0.0000) \\ 
+			Severe.Flood.Warning & 0.005 (0.01) & 0.001 (0.001) &  & $-$0.001$^{***}$ (0.0005) \\ 
+			Flood.Watch & 0.0001 (0.0000) &  &  &  \\ 
+			Constant & $-$1528.34 (2592.07) & 2798.20 (2769.81) & $-$879.80 (638.20) & 3351.69$^{***}$ (1048.28) \\ 
+			\hline \\[-1.8ex] 
+			Observations & 269 & 231 & 363 & 296 \\ 
+			R$^{2}$ & 0.60 & 0.66 & 0.64 & 0.64 \\ 
+			Adjusted R$^{2}$ & 0.55 & 0.61 & 0.61 & 0.59 \\ 
+			\hline 
+			\hline \\[-1.8ex] 
+			\textit{Note:}  & \multicolumn{4}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\  
+		\end{tabular} 
+	\end{adjustbox}
+\end{table}
+
+
+%by party
+
+% Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy Institute. E-mail: marek.hlavac at gmail.com
+% Date and time: Tue, Aug 06, 2024 - 17:58:38
+\begin{table}[!htbp] \centering 
+	\caption{Models Divided by Year} 
+	\label{} 
+	\footnotesize 
+	\begin{adjustbox}{width=\textwidth}
+		\begin{tabular}{@{\extracolsep{5pt}}lccccc} 
+			\\[-1.8ex]\hline 
+			\hline \\[-1.8ex] 
+			& \multicolumn{5}{c}{\textit{Dependent variable:}} \\ 
+			\cline{2-6} 
+			\\[-1.8ex] & \multicolumn{5}{c}{environment} \\ 
+			\\[-1.8ex] & (1) & (2) & (3) & (4) & (5)\\ 
+			\hline \\[-1.8ex] 
+			election\_year2015 & 0.27 (0.99) & $-$0.76 (1.23) & $-$2.46 (1.67) & $-$3.53 (4.31) & $-$0.87 (1.20) \\ 
+			election\_year2017 & $-$0.96 (0.77) & 1.45 (0.96) & $-$2.91$^{**}$ (1.19) & $-$8.32$^{**}$ (3.99) & 0.82 (1.00) \\ 
+			election\_year2019 & $-$0.23 (0.70) & 4.35$^{***}$ (0.92) & $-$0.37 (1.09) & $-$1.33 (4.04) & 1.18 (1.31) \\ 
+			Median\_Age & 0.01 (0.10) & $-$0.08 (0.11) & 0.02 (0.17) & $-$0.56 (0.47) & $-$0.05 (0.16) \\ 
+			Total\_Rural\_Population & $-$0.0000 (0.0001) & 0.0001 (0.0001) & $-$0.0000 (0.0002) & $-$0.0001 (0.0004) & 0.0002 (0.0002) \\ 
+			Total\_Urban\_Population & $-$0.0000 (0.0001) & 0.0001 (0.0001) & $-$0.0000 (0.0001) & $-$0.0001 (0.0004) & 0.0002 (0.0002) \\ 
+			Higher\_Managerial & 0.0003 (0.0002) & 0.0001 (0.0003) & $-$0.0005 (0.0004) & $-$0.0004 (0.001) & $-$0.0001 (0.0004) \\ 
+			Lower\_Managerial & $-$0.0002 (0.0002) & $-$0.0002 (0.0002) & 0.0005 (0.0003) & 0.0001 (0.001) & $-$0.0003 (0.0004) \\ 
+			Intermediate\_Occupations & $-$0.0001 (0.0003) & $-$0.0004 (0.0003) & 0.0003 (0.0004) & 0.001 (0.001) & $-$0.0002 (0.0004) \\ 
+			Small\_Employers & 0.0001 (0.0003) & $-$0.0000 (0.0003) & $-$0.0003 (0.0005) & 0.001 (0.001) & $-$0.0000 (0.0004) \\ 
+			Lower\_Supervisory & 0.001 (0.0004) & $-$0.0003 (0.001) & $-$0.0000 (0.001) & $-$0.0001 (0.002) & 0.0004 (0.001) \\ 
+			Semi\_Routine & $-$0.0001 (0.0004) & 0.0002 (0.0003) & $-$0.0002 (0.001) & $-$0.001 (0.001) & $-$0.0003 (0.001) \\ 
+			Routine\_Occupations & $-$0.0001 (0.0003) & $-$0.0003 (0.0003) & 0.0001 (0.001) & 0.001 (0.002) & $-$0.001 (0.0005) \\ 
+			Never\_Worked\_Unemployed & $-$0.001 (0.001) & $-$0.001 (0.001) & $-$0.001 (0.002) & $-$0.002 (0.005) & 0.001 (0.001) \\ 
+			Never\_Worked & 0.001 (0.001) & 0.001 (0.001) & 0.002 (0.002) & 0.002 (0.01) & $-$0.002 (0.002) \\ 
+			Long\_Term\_Unemployed &  &  &  &  &  \\ 
+			Total\_Students\_Count & $-$0.0000 (0.0001) & $-$0.0001 (0.0001) & 0.0000 (0.0002) & 0.0002 (0.001) & $-$0.0002 (0.0002) \\ 
+			yearly\_avg\_tavg & 1.96 (2.25) & $-$3.20 (2.77) & $-$2.90 (4.18) & $-$0.59 (11.07) & 1.14 (3.31) \\ 
+			yearly\_avg\_tmin & $-$0.69 (1.28) & 1.67 (1.56) & 1.72 (2.29) & 1.13 (5.85) & $-$0.56 (1.58) \\ 
+			yearly\_avg\_tmax & $-$1.47 (1.05) & 1.46 (1.32) & $-$0.14 (2.04) & $-$0.53 (5.25) & $-$0.80 (1.66) \\ 
+			yearly\_avg\_prcp & $-$0.004 (0.02) & $-$0.01 (0.02) & $-$0.03 (0.03) & 0.004 (0.07) & $-$0.02 (0.06) \\ 
+			yearly\_avg\_wspd & $-$0.14 (0.11) & $-$0.11 (0.13) & $-$0.21 (0.22) & 0.25 (0.53) & $-$0.02 (0.20) \\ 
+			yearly\_avg\_pres & $-$0.39 (0.51) & $-$0.97 (0.62) & 0.86 (1.12) & 0.28 (2.81) & $-$0.11 (1.36) \\ 
+			yearly\_avg\_tsun & 0.001$^{**}$ (0.0004) & 0.001 (0.0005) & 0.0001 (0.001) & $-$0.001 (0.002) & $-$0.0001 (0.001) \\ 
+			lib\_share & $-$0.02 (0.03) & 0.03 (0.03) & 0.04 (0.05) & 0.05 (0.11) & $-$0.03 (0.03) \\ 
+			lab\_share & $-$0.02 (0.03) & 0.03 (0.03) & 0.04 (0.05) & 0.05 (0.11) & $-$0.03 (0.03) \\ 
+			oth\_share & $-$0.03 (0.02) & 0.03 (0.03) & 0.04 (0.05) & 0.05 (0.11) & $-$0.03 (0.03) \\ 
+			con\_share & $-$0.02 (0.02) & 0.03 (0.03) & 0.04 (0.05) & 0.05 (0.11) & $-$0.03 (0.03) \\ 
+			Flood.Alert & $-$0.0000 (0.0000) & 0.0000 (0.0000) & 0.0000 (0.0000) & 0.0000 (0.0000) & $-$0.0000 (0.0000) \\ 
+			Flood.Warning & 0.0000 (0.0000) & $-$0.0000 (0.0000) & $-$0.0000 (0.0000) & 0.0000 (0.0000) & 0.0000 (0.0000) \\ 
+			Severe.Flood.Warning & $-$0.0000 (0.0001) & 0.0001 (0.0001) & 0.0002 (0.0002) & $-$0.0003 (0.0004) & $-$0.0000 (0.0002) \\ 
+			Flood.Watch & $-$0.0000 (0.0000) & 0.0000$^{*}$ (0.0000) & $-$0.0000 (0.0000) & $-$0.0000 (0.0001) & $-$0.0000 (0.0000) \\ 
+			Constant & 647.15 (565.88) & 685.29 (673.96) & $-$1283.75 (1209.49) & $-$715.17 (3103.89) & 397.84 (1413.28) \\ 
+			\hline \\[-1.8ex] 
+			Observations & 284 & 326 & 311 & 140 & 98 \\ 
+			R$^{2}$ & 0.15 & 0.24 & 0.16 & 0.39 & 0.17 \\ 
+			Adjusted R$^{2}$ & 0.05 & 0.16 & 0.07 & 0.21 & $-$0.21 \\ 
+			\hline 
+			\hline \\[-1.8ex] 
+			\textit{Note:}  & \multicolumn{5}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+		\end{tabular} 
+	\end{adjustbox}
+\end{table}
+
+
+\subsection{Explanation of Models Divided By Year and Party}
+
+
+2010 Election
+
+Within the 2010 election, all parties showed significantly fewer environmental mentions compared to the Green Party. The Conservative Party had an average environmental mention count score that was 17.10 points lower than the Green Party ($p<0.01$). The Labour Party's average score was 17.00 points lower ($p<0.01$). The Liberal Democrat Party's average score was 15.26 points lower ($p<0.01$), and the UK Independence Party had the lowest count, with an average score 18.25 points lower ($p<0.01$). Additionally, the number of individuals in higher-ranked occupational positions was significant in predicting environmental mentions, with each unit increase associated with a decrease of 0.0004 points ($p<0.1$). The number of individuals in lower-ranked positions was also significant, with each unit increase associated with a decrease of 0.001 points ($p<0.1$). The proportion of rural and urban populations had significant effects as well: each unit increase in the proportion of rural population was associated with a 0.0002 point increase in environmental mentions ($p<0.1$), and each unit increase in the proportion of urban population was associated with a 0.0002 point increase ($p<0.1$). Furthermore, the frequency of flood warnings in a constituency was significant, with every flood warning associated with, on average, a 0.0002 decrease in environmental mentions in a constituency ($p < 0.1$).
+
+2015 Election
+
+In the 2015 election, environmental mentions were closer to those of the Green Party compared to 2010. The Conservative Party had an average environmental mention count score 12.95 points lower than the Green Party ($p<0.01$). The Labour Party's score was 12.89 points lower ($p<0.01$). The Liberal Democrat Party's score was 11.29 points lower ($p<0.01$), and the UK Independence Party had an average score 13.45 points lower ($p<0.01$). The number of individuals in higher positions was also a significant predictor. Each unit increase in the count of individuals in a higher ranked position was associated with a decrease of 0.0005 points in environmental mentions ($p<0.1$).
+
+2017 Election
+
+The 2017 election demonstrated the least variation between all parties and the Green Party ($p<0.01$). The Conservative Party had a count score 9.16 points lower ($p<0.01$), the Labour Party 8.63 points lower ($p<0.01$), the Liberal Democrat Party 9.52 points lower ($p<0.01$), and the UK Independence Party 9.55 points lower compared to the Green Party ($p<0.01$). Unlike the 2010 and 2015 elections, variables such as unemployment and higher position count were not significant. Instead, the average sea-level air pressure in hPa, the maximum air temperature in $^\circ$C, the daily precipitation total in mm, and the total student count were significant. With each one unit increase total student count, there was an associated 0.0001 point decrease in the environmental mention count ($p<0.05$). For every 1 unit increase in the average air temperature in $^\circ$C, there was an associated 2.00 unit decrease in environmental mention count ($p<0.05$). For every one mm increase in the daily precipitation total by month, there was a 0.04 unit decrease in the environmental mentions ($p<0.05$). For every one unit increase in the average sea-level air pressure in hPa,, there was a 0.99 unit increase in the environmental mentions ($p<0.05$). 
+
+2019 Election
+
+In the 2019 election, there was a return to greater variation between parties. The Conservative Party had an average environmental mention count score 17.41 points lower than the Green Party ($p<0.01$). The Labour Party’s average score was 15.00 points lower ($p<0.01$), making it the most similar to the Green Party in terms of environmental mentions. The Liberal Democrat Party had an average score 15.56 points lower ($p<0.01$), and the UK Independence Party had the lowest count, with an average score 18.55 points lower ($p<0.01$). Significant factors included the number of lower position individuals, with each unit increase associated with a 0.0003 point increase in environmental mentions ($p<0.05$). The total number of students was also significant, with each unit increase associated with a 0.0001 point decrease ($p<0.01$). Additionally, for every one unit increase in the average sea-level air pressure in hPa, there was a 1.72 unit decrease in the environmental mentions ($p<0.05$). For every one unit increase in the daily sunshine total in minutes, there was an associated 0.002 point increase in the number of environmental mentions ($p<0.05$).
+
+Conservative Party
+
+For the Conservative Party, there was no significant difference in environmental mention count between the 2010 and the 2015, 2017, and 2019 elections. Although not statistically significant, the 2015 election had a lower count score of 0.03 points compared to the 2010 election, and the 2017 election had a count score that was 1.93 points lower than 2010, and the 2019 election had a lower count score of 0.35 points compared to the 2010 election. Therefore, it seems that the Conservative Party was not impacted by election year in campaign strategy towards environmental mentions. However, the maximum air temperature in $^\circ$C as well as the daily sunshine total in minutes were both significant. For every one unit increase in maximum air temperature, there was a 1.74 unit decrease in environmental mentions ($p<0.1$). For every one unit increase in daily sunshine minutes, there was a 0.001 point increase in environmental mentions ($p<0.05$)
+
+Labour Party
+
+For the Labour Party, the only year showing a statistically significant difference from the 2010 election was the 2019 election. In the 2019 election, the average environmental mention count score was 4.21 points higher compared to the 2010 election ($p<0.01$). This indicates a significant increase in environmental mentions during the 2019 election compared to 2010. The counts for the 2010 and 2015 elections initially decreased by 0.59 points in 2015, but this change was not statistically significant. The 2017 election saw an increase of 1.46 points, but was also not statistically significant. Furthermore, the quantity of flood watches issued was also significant, with a one unit increase in flood watches associated with a 0.0000 increase in environmental mentions.
+
+Liberal Democrat Party
+
+For the Liberal Democrat Party, the 2017 election showed significant differences in environmental mention counts compared to the 2010 election. The 2015 election, which was not statistically different from the 2010 election, showed a decrease of 2.32 points. The 2017 election had an average environmental mention count score that was 2.92 points lower compared to the 2010 election ($p<0.05$). In the 2019 election, the average count score was 0.34 points lower than in 2010 election. No other variables were significant for the Liberal Democrat Party in predicting environmental mentions.
+
+Green Party
+
+For the Green Party, the 2017 election showed a significant decrease with an average environmental mention count score 8.21 points lower than in the 2010 election ($p<0.01$). The 2015 election, though not statistically significant, had an average score that was 3.72 points lower compared to the 2010 election ($p<0.01$). The 2019 election, also not significant, showed a 1.16 point decrease in mentions compared to 2010. Aside from the election years, the only other significant variable for the Green Party was the median age of a constituency, with every one unit increase in median age associated with an average 0.53 point decrease in environmental mentions.
+
+UK Independence Party
+
+For the UK Independence Party, there were no significant variables regarding changes in environmental mention count.
+
+
+\subsection{UKIP Example Images}
+
+
+% Include the second image
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{28_1.jpg}
+	\caption{}
+	\label{fig:28_1}
+\end{figure}
+
+% Include the third image
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{28_2.jpg}
+	\caption{}
+	\label{fig:28_2}
+\end{figure}
+
+
+
+
+
+\subsection{Full Mean Environmental Mention Distribution Map}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.38\textwidth]{plots/Overall_Environmental_Mentions.png}
+	\caption{Mean Environmental Mentions By Constituency}
+	\label{fig:meanenvbyconold}
+\end{figure}
+
+
+
+
+
+
+
+\newpage
+	
+\printbibliography
+	
+
+\end{document}
