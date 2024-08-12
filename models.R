@@ -333,7 +333,7 @@ print(most_mentioned_issue)
 
 
 
-#nique election years
+#unique election years
 election_years <- unique(issue_mentions$Election)
 
 # Create a LaTeX table for each election year
@@ -358,12 +358,12 @@ for (year in election_years) {
 
 
 
-# Prepare the data for stargazer
+#stargazer
 env_percentage_table <- issue_mentions %>%
   select(Election, Party, percent_total_environment) %>%
   arrange(Election, Party)
 
-# Output LaTeX table using stargazer
+#LaTeX table using stargazer
 stargazer(
   env_percentage_table,
   type = "latex",
@@ -375,7 +375,7 @@ stargazer(
 
 
 
-#plots to show this bettter in paper
+#plots to show this better in paper
 
 
 # Count of Observations by Year
@@ -393,13 +393,54 @@ ggsave("count_by_year.png", width = 10, height = 6, dpi = 300)
 ggplot(count_by_party_and_year, aes(x = Party, y = Count, fill = Election)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_minimal() +
-  labs(title = "Count of Observations by Party and Year",
-       x = "Party",
+  labs(x = "Party",
        y = "Count") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ggsave("count_by_party_year.png", width = 12, height = 8, dpi = 300)
 
+#percentages
+
+
+
+#stargazer
+env_percentage_table <- issue_mentions %>%
+  select(Election, Party, percent_total_environment) %>%
+  arrange(Election, Party)
+
+# LaTeX table using stargazer
+stargazer(
+  env_percentage_table,
+  type = "latex",
+  title = "Percentage of Environment Mentions by Party and Year",
+  summary = FALSE,
+  rownames = FALSE,
+  out = "environment_mentions_percentage.tex"
+)
+
+
+#  plotting
+env_mentions <- issue_mentions %>%
+  select(Election, Party, percent_total_environment) %>%
+  rename(percent_environment = percent_total_environment) %>%
+  arrange(Election, Party)
+
+
+ggplot(env_mentions, aes(x = Party, y = percent_environment, fill = Election)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  labs(
+    #title = "Percentage of Environment Mentions by Party and Year",
+    x = "Party",
+    y = "Percentage"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.title = element_blank() # Optional: Removes legend title if not needed
+  )
+
+
+ggsave("env_mentions_percentage.png", width = 12, height = 8, dpi = 300)
 
 
 
